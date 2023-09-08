@@ -10,6 +10,8 @@ from geometry_msgs.msg import PoseStamped
 from move_base_msgs.msg import MoveBaseActionGoal
 from tf import TransformListener
 
+from  std_srvs.srv import Empty 
+
 odom_topic = '/odometry/filtered'
 path_topic = '/move_base/TebLocalPlannerROS/local_plan' # here is necessary to put the path topic (global or local)
 frame_destinatin = 'wcias_base_footprint'
@@ -69,6 +71,12 @@ def generate_ranges(grid: ProximityGridMsg):
     # Since we moved to the frame destination, the point are already referred to the current position in the odom frame
     d = math.sqrt(objective.pose.position.x ** 2 + objective.pose.position.y ** 2)
     alpha = math.atan2(objective.pose.position.y, objective.pose.position.x)
+
+    # Setup the angle if the point is in the back position
+    if alpha < grid.angle_min:
+        alpha = grid.angle_min
+    elif alpha > grid.angle_max:
+        alpha = grid.angle_max 
     
     used = False
 
@@ -81,13 +89,7 @@ def generate_ranges(grid: ProximityGridMsg):
             else:
                 l.append(float('inf'))
         else:
-            l.append(float('inf'))
-    
-    # If the destination is in the back of the chair set an attractor on the 
-    # last possible point
-    if not used:
-        l.pop()
-        l.append(d)
+            l.append(float('inf'))  
 
     return l
 
@@ -95,6 +97,13 @@ def setup_listeners():
     rospy.Subscriber(odom_topic, Odometry, odom_callback)
     rospy.Subscriber(path_topic, Path, path_callback)
     rospy.Subscriber(goal_topic, MoveBaseActionGoal, goal_callback)
+
+def setup_services():
+    global start_srv, stop_srv
+    rospy.wait_for_service("/navigation/navigation_start")
+    rospy.wait_for_service("/navigation/navigation_stop")
+    start_srv = rospy.ServiceProxy("/navigation/navigation_start", Empty)
+    stop_srv  = rospy.ServiceProxy("/navigation/navigation_stop",  Empty)
 
 def setup_grid(): 
     grid = ProximityGridMsg()
@@ -122,18 +131,37 @@ def init_globals():
     current_destination.header.frame_id = "wcias_odom"
 
 
+def set_controller_state():
+    global odom_position, current_destination
+    global start_srv, stop_srv
+    global running
+
+    d = math.sqrt( (odom_position.pose.pose.position.x - current_destination.pose.position.x) **2 +\
+                   (odom_position.pose.pose.position.y - current_destination.pose.position.y) **2 )
+    
+    if d > 0.2 and not running:
+        start_srv()
+        running = True
+    elif d < 0.2 and running:
+        stop_srv()
+        # Set the current position as the destinatio, to remove proble of noise of the 
+        current_destination.pose = odom_position.pose.pose
+        running = False
+
+
+
 def main():
     rospy.init_node('converter')
     pub = rospy.Publisher('attractor', ProximityGridMsg, queue_size=1)
 
-    global tf
+    global running
+    running = False
    
     init_globals()
     grid, frame_id = setup_grid() 
     setup_listeners()
+    setup_services()
 
-    # tf.waitForTransform(frame_destinatin, "wcias_odom", rospy.Time(), rospy.Duration(5.0))
-    
     # TODO : update these as parameters
     rate = rospy.Rate(10)
 
@@ -147,6 +175,8 @@ def main():
         grid.ranges = generate_ranges(grid)
 
         pub.publish(grid)
+
+        set_controller_state()
         rate.sleep()
     
 if __name__ == '__main__':
