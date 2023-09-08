@@ -37,17 +37,18 @@ def segment_path():
     
     # TODO: update these as parameters
     n_distance = 2 # [m]
-    delta_distance = 0.4 # [m]
+    delta_distance = 0.8 # [m]
 
     found = False
 
-    for pose in path.poses[:-1]: # reverse the array in order to find the closest one
+    for pose in path.poses[::-1]: # reverse the array in order to find the closest one
         d  = math.sqrt((pose.pose.position.x - odom_position.pose.pose.position.x)  ** 2 + (pose.pose.position.y - odom_position.pose.pose.position.y)  ** 2)
         dl = math.sqrt((pose.pose.position.x - current_destination.pose.position.x) ** 2 + (pose.pose.position.y - current_destination.pose.position.y) ** 2)
         # check witch is the first point that is closest to the current destination that accomplish the distance (reversing the path in order to find the closest one)
-        if d < n_distance and dl < delta_distance and not found:
+        if d < n_distance and dl > delta_distance and not found:
             current_destination = pose
             found = True
+            break
     
     # if the path is empty set an attractor in the current odom position
     if not found:
@@ -59,7 +60,7 @@ def segment_path():
 
 def generate_ranges(grid: ProximityGridMsg): 
     l = []
-    global current_destination, tf
+    global current_destination, tf, dest_pub
 
     # Get the current position in the odom frame, need to wait for the transform 
     now = rospy.Time(0)
@@ -132,19 +133,24 @@ def init_globals():
 
 
 def set_controller_state():
-    global odom_position, current_destination
+    global odom_position, current_destination, dest_pub
     global start_srv, stop_srv
     global running
 
     d = math.sqrt( (odom_position.pose.pose.position.x - current_destination.pose.position.x) **2 +\
                    (odom_position.pose.pose.position.y - current_destination.pose.position.y) **2 )
     
-    if d > 0.2 and not running:
+    if (d > 0.2 and not running):
         start_srv()
         running = True
     elif d < 0.2 and running:
         stop_srv()
         # Set the current position as the destinatio, to remove proble of noise of the 
+        #msg = MoveBaseActionGoal()
+        
+        #msg.goal.target_pose.pose = odom_position.pose.pose
+        #msg.goal.target_pose.header = odom_position.header
+        #dest_pub.publish(msg)
         current_destination.pose = odom_position.pose.pose
         running = False
 
@@ -152,15 +158,20 @@ def set_controller_state():
 
 def main():
     rospy.init_node('converter')
-    pub = rospy.Publisher('attractor', ProximityGridMsg, queue_size=1)
+    pub = rospy.Publisher('attractors', ProximityGridMsg, queue_size=1)
 
-    global running
+    global running, tf, dest_pub
+    dest_pub = rospy.Publisher('/move_base/goal', MoveBaseActionGoal, queue_size=1)
+
     running = False
-   
+
     init_globals()
     grid, frame_id = setup_grid() 
     setup_listeners()
     setup_services()
+
+    tf.waitForTransform(frame_destinatin, "wcias_odom", rospy.Time(), rospy.Duration(5.0))
+
 
     # TODO : update these as parameters
     rate = rospy.Rate(10)
