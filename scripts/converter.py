@@ -2,21 +2,24 @@
 
 import rospy
 import math
+import time
 
 from proximity_grid.msg import ProximityGridMsg
 from std_msgs.msg import Header
 from nav_msgs.msg import Path, Odometry
 from geometry_msgs.msg import PoseStamped
-from move_base_msgs.msg import MoveBaseActionGoal
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseActionGoal
+import actionlib
 from tf import TransformListener
 
 from  std_srvs.srv import Empty 
 
 odom_topic = '/odometry/filtered'
-path_topic = '/move_base/TebLocalPlannerROS/local_plan' # here is necessary to put the path topic (global or local)
+path_topic = '/move_base/TebLocalPlannerROS/global_plan' # here is necessary to put the path topic (global or local)
 frame_destinatin = 'wcias_base_footprint'
+goal_topic = '/move_base/goal/'
 
-goal_topic = "/move_base/goal"
+navigation_name = "move_base"
 
 def odom_callback(data: Odometry):
     global odom_position
@@ -133,35 +136,46 @@ def init_globals():
 
 
 def set_controller_state():
-    global odom_position, current_destination, dest_pub
+    global odom_position, current_destination, movebase_client, tf
     global start_srv, stop_srv
     global running
 
     d = math.sqrt( (odom_position.pose.pose.position.x - current_destination.pose.position.x) **2 +\
                    (odom_position.pose.pose.position.y - current_destination.pose.position.y) **2 )
-    
-    if (d > 0.2 and not running):
+                   
+    if (d > 0.21 and not running):
         start_srv()
         running = True
+
     elif d < 0.2 and running:
         stop_srv()
-        # Set the current position as the destinatio, to remove proble of noise of the 
-        #msg = MoveBaseActionGoal()
-        
-        #msg.goal.target_pose.pose = odom_position.pose.pose
-        #msg.goal.target_pose.header = odom_position.header
-        #dest_pub.publish(msg)
-        current_destination.pose = odom_position.pose.pose
-        running = False
 
+        # remove the current path
+        current_destination.pose = odom_position.pose.pose
+        p = PoseStamped()
+        p.header = odom_position.header
+        p.pose = odom_position.pose.pose
+        path.poses = [p]
+
+        # Send the command that is reached
+        goal = MoveBaseGoal()
+        goal.target_pose.pose = odom_position.pose.pose 
+        goal.target_pose.header = odom_position.header
+        goal.target_pose.header.stamp = rospy.Time.now()
+
+        movebase_client.send_goal(goal)
+        wait = movebase_client.wait_for_result()
+
+        running = False
 
 
 def main():
     rospy.init_node('converter')
     pub = rospy.Publisher('attractors', ProximityGridMsg, queue_size=1)
 
-    global running, tf, dest_pub
-    dest_pub = rospy.Publisher('/move_base/goal', MoveBaseActionGoal, queue_size=1)
+    global running, movebase_client
+    movebase_client = actionlib.SimpleActionClient(navigation_name, MoveBaseAction)
+    movebase_client.wait_for_server()
 
     running = False
 
@@ -169,9 +183,6 @@ def main():
     grid, frame_id = setup_grid() 
     setup_listeners()
     setup_services()
-
-    tf.waitForTransform(frame_destinatin, "wcias_odom", rospy.Time(), rospy.Duration(5.0))
-
 
     # TODO : update these as parameters
     rate = rospy.Rate(10)
