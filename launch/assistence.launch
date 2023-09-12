@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  <node name='path_to_attractor_converter' pkg='prox' type='converter.py'/>
+  <node name='target_generator'            pkg='prox' type='target_generator.py'/>
+  <node name='confidence_control'          pkg='prox' type='confidence_control.py'/>
+</launch>
