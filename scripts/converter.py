@@ -10,12 +10,14 @@ from nav_msgs.msg import Path, Odometry
 from geometry_msgs.msg import PoseStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseActionGoal
 import actionlib
-from tf import TransformListener
+
+import tf2_ros
+import tf2_geometry_msgs
 
 from  std_srvs.srv import Empty 
 
-odom_topic = '/odometry/filtered'
-path_topic = '/move_base/TebLocalPlannerROS/global_plan' # here is necessary to put the path topic (global or local)
+odom_topic = '/odom'
+path_topic = '/move_base/NavfnROS/plan' # here is necessary to put the path topic (global or local)
 frame_destinatin = 'wcias_base_footprint'
 goal_topic = '/move_base/goal/'
 
@@ -63,15 +65,13 @@ def segment_path():
 
 def generate_ranges(grid: ProximityGridMsg): 
     l = []
-    global current_destination, tf, dest_pub
+    global current_destination, tf_buffer
 
     # Get the current position in the odom frame, need to wait for the transform 
-    now = rospy.Time(0)
-    current_destination.header.stamp = now
-    tf.waitForTransform(frame_destinatin, "wcias_odom", now, rospy.Duration(5.0))
-
-    objective = tf.transformPose(frame_destinatin, current_destination )
-    
+ 
+    transform = tf_buffer.lookup_transform(frame_destinatin, "wcias_odom", rospy.Time(0), rospy.Duration(1) )
+    objective = tf2_geometry_msgs.do_transform_pose(current_destination, transform)
+        
     # Since we moved to the frame destination, the point are already referred to the current position in the odom frame
     d = math.sqrt(objective.pose.position.x ** 2 + objective.pose.position.y ** 2)
     alpha = math.atan2(objective.pose.position.y, objective.pose.position.x)
@@ -127,10 +127,13 @@ def setup_grid():
     return grid, frame_id
 
 def init_globals():
-    global tf, current_destination, path, odom_position
+    global tf_buffer, tf_listener, current_destination, path, odom_position
     odom_position = Odometry()
     path = Path()
-    tf = TransformListener()
+
+    tf_buffer = tf2_ros.Buffer()
+    tf_listener = tf2_ros.TransformListener(tf_buffer)
+    
     current_destination = PoseStamped()
     current_destination.header.frame_id = "wcias_odom"
 
@@ -142,11 +145,13 @@ def set_controller_state():
 
     d = math.sqrt( (odom_position.pose.pose.position.x - current_destination.pose.position.x) **2 +\
                    (odom_position.pose.pose.position.y - current_destination.pose.position.y) **2 )
+      
                    
-    if (d > 0.21 and not running):
+    if (d > 0.1 and not running):
         start_srv()
         running = True
 
+    """
     elif d < 0.2 and running:
         stop_srv()
 
@@ -164,9 +169,10 @@ def set_controller_state():
         goal.target_pose.header.stamp = rospy.Time.now()
 
         movebase_client.send_goal(goal)
-        wait = movebase_client.wait_for_result()
+        #wait = movebase_client.wait_for_result()
 
         running = False
+    """
 
 
 def main():
@@ -185,7 +191,7 @@ def main():
     setup_services()
 
     # TODO : update these as parameters
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(16)
 
     while not rospy.is_shutdown():
         head = Header()
