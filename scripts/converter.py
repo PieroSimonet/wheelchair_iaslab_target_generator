@@ -146,11 +146,11 @@ def set_controller_state():
     d = math.sqrt( (odom_position.pose.pose.position.x - current_destination.pose.position.x) **2 +\
                    (odom_position.pose.pose.position.y - current_destination.pose.position.y) **2 )
       
-                   
+    """            
     if (d > 0.1 and not running):
         start_srv()
         running = True
-
+    """
     """
     elif d < 0.2 and running:
         stop_srv()

@@ -68,7 +68,7 @@ def set_controller_state():
         # TODO: update this according to the bci signal
         
         pose.pose.position.x = 1
-        #callback_bci(random.random())
+        callback_bci(random.random())
         pose.pose.position.y = state
 
         pose = tf2_geometry_msgs.do_transform_pose(pose, transform)
@@ -98,7 +98,7 @@ def main():
     setup_listeners()
 
     # TODO : update these as parameters
-    rate = rospy.Rate(16)
+    rate = rospy.Rate(0.5)
 
     while not rospy.is_shutdown():
         set_controller_state()

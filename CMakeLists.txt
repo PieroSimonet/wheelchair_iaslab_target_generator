@@ -12,6 +12,9 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   nav_msgs
+  geometry_msgs
+  move_base_msgs
+  std_srvs
   tf
 )
 
@@ -118,14 +121,15 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/prox.cpp
-# )
+add_library(${PROJECT_NAME}
+  src/lib/confidence_control.cpp
+  src/lib/path_to_field.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -135,7 +139,9 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/prox_node.cpp)
+add_executable(confidence_control_node src/ConfidenceControl.cpp)
+add_executable(path_to_field_node src/PathToField.cpp)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -148,9 +154,15 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(confidence_control_node
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(path_to_field_node
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
