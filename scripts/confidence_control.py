@@ -12,10 +12,9 @@ import actionlib
 from  std_srvs.srv import Empty 
 
 odom_topic = '/odom'
-frame_destinatin = 'wcias_base_footprint'
 goal_topic = '/move_base/goal/'
-
-navigation_name = "move_base"
+delta_distance = 0.5 # [m]
+Hz = 16
 
 def odom_callback(data: Odometry):
     global odom_position
@@ -80,10 +79,13 @@ def main():
     running = False
 
     # TODO : update these as parameters
-    rate = rospy.Rate(16)
+    rate = rospy.Rate(Hz)
+
+    global request_new_target
 
     while not rospy.is_shutdown():
-        set_controller_state()
+        if check_distance_to_current_destination():
+            request_new_target()
         rate.sleep()
     
 if __name__ == '__main__':

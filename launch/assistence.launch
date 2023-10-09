@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+  <node name='path_to_attractor_converter' pkg='prox' type='converter.py'>
+    <remap from="/attractors" to="proximity_grid/attractors" /> 
+    <param name="frame_id"   value="fused_scan"/>
+  </node>
+
+  <node name='target_generator'            pkg='prox' type='target_generator.py'/>
+ 
+  <node name='confidence_control'          pkg='prox' type='confidence_control_node'>
+		<param name="short_distance" value="0.1"/>
+		<param name="long_distance"  value="0.4"/>
+
+		<param name="odom" value="/odometry/filterd"/>
+		<param name="goal" value="/move_base/goal"/>
+	</node>
+
+</launch>
