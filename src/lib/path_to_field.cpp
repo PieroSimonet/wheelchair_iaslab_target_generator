@@ -32,8 +32,8 @@ void path_to_field::initialize() {
     ros::param::param("~rate", this->rate_, 16);
     ros::param::param("~frame_id", this->frame_id_, frame_id);
     ros::param::param("~odom_frame", this->odom_frame_, odom_frame);
-    ros::param::param("~angle_min", this->angle_min_, 0.0d);
-    ros::param::param("~angle_max", this->angle_max_, M_PI);
+    ros::param::param("~angle_min", this->angle_min_, -M_PI);
+    ros::param::param("~angle_max", this->angle_max_,  M_PI);
     ros::param::param("~angle_increment", this->angle_increment_, M_PI/8);
     ros::param::param("~range_min", this->range_min_, 0.0d);
     ros::param::param("~range_max", this->range_max_, 5.0d);
@@ -46,10 +46,10 @@ void path_to_field::initialize() {
     std::string goal_topic = "move_base/goal";
     std::string attractor_topic = "attractor";
 
-    ros::param::param<std::string>(odom_topic, this->odom_topic_, odom_topic);
-    ros::param::param<std::string>(path_topic, this->path_topic_, path_topic);
-    ros::param::param<std::string>(goal_topic, this->goal_topic_, goal_topic);
-    ros::param::param<std::string>(attractor_topic, this->attractor_topic_, attractor_topic);
+    ros::param::param<std::string>("~odom_topic", this->odom_topic_, odom_topic);
+    ros::param::param<std::string>("~path_topic", this->path_topic_, path_topic);
+    ros::param::param<std::string>("~goal_topic", this->goal_topic_, goal_topic);
+    ros::param::param<std::string>("~attractor_topic", this->attractor_topic_, attractor_topic);
 
     this->current_odom_ = nav_msgs::Odometry();
     this->current_goal_ = geometry_msgs::PoseStamped();
