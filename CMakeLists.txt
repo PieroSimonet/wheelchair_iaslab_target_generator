@@ -14,8 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   geometry_msgs
   move_base_msgs
+  proximity_grid
   std_srvs
   tf
+  tf2_ros
 )
 
 ## System dependencies are found with CMake's conventions

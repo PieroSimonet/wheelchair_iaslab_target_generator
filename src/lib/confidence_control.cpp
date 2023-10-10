@@ -3,6 +3,8 @@
 namespace prox { 
 
 confidence_control::confidence_control(void) {
+    this->nh_ = ros::NodeHandle("~confidence_control");
+
     this->current_position = nav_msgs::Odometry();
     this->current_goal = geometry_msgs::PoseStamped();
 
@@ -42,7 +44,7 @@ void confidence_control::run() {
         this->check_control_state();
 
         if(! this->goal_reached_ && !this->running){
-            this->field_stard_srv.call(this->empty);
+    this->field_stard_srv.call(this->empty);
             this->running = true;
         }else if(this->goal_reached_ && this->running){
             this->field_stop_srv.call(this->empty);
