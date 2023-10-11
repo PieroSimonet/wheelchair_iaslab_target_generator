@@ -79,7 +79,6 @@ void path_to_field::setup_listeners() {
     this->odom_sub_ = this->nh_.subscribe(this->odom_topic_, 1, &path_to_field::odom_callback, this);
     this->path_sub_ = this->nh_.subscribe(this->path_topic_, 1, &path_to_field::path_callback, this);
     this->goal_sub_ = this->nh_.subscribe(this->goal_topic_, 1, &path_to_field::goal_callback, this);
-    ROS_WARN("pub");
 }
 
 void path_to_field::setup_services() {}
@@ -118,7 +117,7 @@ void path_to_field::generate_attactor() {
     geometry_msgs::TransformStamped transform;
 
     float distance = 0.0;
-    double alpha = 0.0;
+    double alpha   = 0.0;
 
     try{
 
@@ -134,7 +133,7 @@ void path_to_field::generate_attactor() {
 
     }catch (tf2::TransformException &ex) {
 
-        // ROS_WARN("Could NOT transform %s to %s: %s \n Set an attractor on itself", this->odom_frame_.c_str(), this->base_frame.c_str() ,ex.what());
+        ROS_WARN("Could NOT transform %s to %s: %s \n Set an attractor on itself", this->odom_frame_.c_str(), this->base_frame.c_str() ,ex.what());
         // DO NOT SET NEW DISTANCE -> Attractor will be in (0,0)
     }
 
@@ -158,6 +157,9 @@ void path_to_field::generate_attactor() {
         } else
             attactors[i] = INFINITY;
     }
+
+    if (!used)
+        attactors[size-1] = distance;
 
     this->attractor_.ranges = attactors;
 
