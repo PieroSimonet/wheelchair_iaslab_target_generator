@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <launch>
+
   <node name='path_to_attractor_converter' pkg='prox' type='path_to_field_node'>
-    <param name="attractor_topic" value="proximity_grid/attractors" /> 
+    <param name="attractor_topic" value="/proximity_grid/attractors" /> 
     <param name="frame_id"   value="fused_scan"/>
+    <param name="base_frame" value="wcias_base_footprint"/>
     <param name="odom_topic" value="/odometry/filtered"/>
     <param name="goal_topic" value="/move_base/goal"/>
     <param name="path_topic" value="/move_base/local_plan"/>
@@ -13,15 +15,20 @@
     <param name="angle_increment" value="0.16"/>
     <param name="range_min" value="0.0"/>
     <param name="range_max" value="6.0"/>
-  </node>
+  </node> 
+
+  <!--<node pkg="prox" type="converter.py" name="willy" output="screen">
+        <remap from="/attractors" to="proximity_grid/attractors" /> 
+        <param name="frame_id"   value="fused_scan"/>
+  </node> -->
 
   <node name='target_generator'            pkg='prox' type='target_generator.py'/>
  
-  <node name='confidence_control'          pkg='prox' type='confidence_control_node'>
+  <node name='confidence_control'          pkg='prox' type='confidence_control_node' output="screen">
 		<param name="short_distance" value="0.1"/>
 		<param name="long_distance"  value="0.4"/>
 
-		<param name="odom" value="/odometry/filterd"/>
+		<param name="odom" value="/odometry/filtered"/>
 		<param name="goal" value="/move_base/goal"/>
 	</node>
 

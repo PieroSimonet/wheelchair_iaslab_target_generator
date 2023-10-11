@@ -3,7 +3,7 @@
 namespace prox { 
 
 confidence_control::confidence_control(void) {
-    this->nh_ = ros::NodeHandle("~confidence_control");
+    this->nh_ = ros::NodeHandle("~");
 
     this->current_position = nav_msgs::Odometry();
     this->current_goal = geometry_msgs::PoseStamped();
@@ -24,10 +24,8 @@ confidence_control::confidence_control(void) {
 confidence_control::~confidence_control(void) {}
 
 bool confidence_control::setup_listeners() {
-    this->odometry_sub_ = this->nh_.subscribe(this->odom_topic_, 1,
-     &confidence_control::odom_callback, this);
-    this->goal_sub_     = this->nh_.subscribe(this->goal_topic_, 1,
-     &confidence_control::goal_callback, this);
+    this->odometry_sub_ = this->nh_.subscribe(this->odom_topic_, 1, &confidence_control::odom_callback, this);
+    this->goal_sub_     = this->nh_.subscribe(this->goal_topic_, 1, &confidence_control::goal_callback, this);
     return true;
 }
 
@@ -44,9 +42,10 @@ void confidence_control::run() {
         this->check_control_state();
 
         if(! this->goal_reached_ && !this->running){
-    this->field_stard_srv.call(this->empty);
+            this->field_stard_srv.call(this->empty);
             this->running = true;
         }else if(this->goal_reached_ && this->running){
+            
             this->field_stop_srv.call(this->empty);
             this->running = false;
 
@@ -67,6 +66,7 @@ void confidence_control::check_control_state() {
         this->goal_reached_ = false;
     if (d < this->long_distance)
         this->goal_reached_ = true;
+    // TODO: When the goal is reaced require a new target
 }
 
 void confidence_control::odom_callback(const nav_msgs::Odometry msg) {

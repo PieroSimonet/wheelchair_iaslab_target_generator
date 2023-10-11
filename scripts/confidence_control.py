@@ -48,6 +48,9 @@ def set_controller_state():
     d = math.sqrt( (odom_position.pose.pose.position.x - current_destination.pose.position.x) **2 +\
                    (odom_position.pose.pose.position.y - current_destination.pose.position.y) **2 )
 
+    #print("----------------")
+    #print(d)
+
     global start_srv, stop_srv
 
     if (d > 0.1 and not running):
@@ -69,8 +72,8 @@ def main():
     rospy.init_node('print_d')
 
     global movebase_client, running
-    movebase_client = actionlib.SimpleActionClient(navigation_name, MoveBaseAction)
-    movebase_client.wait_for_server()
+    #movebase_client = actionlib.SimpleActionClient(navigation_name, MoveBaseAction)
+    #movebase_client.wait_for_server()
 
     init_globals()
     setup_listeners()
@@ -84,8 +87,9 @@ def main():
     global request_new_target
 
     while not rospy.is_shutdown():
-        if check_distance_to_current_destination():
-            request_new_target()
+        set_controller_state()
+        #if check_distance_to_current_destination():
+        #    request_new_target()
         rate.sleep()
     
 if __name__ == '__main__':

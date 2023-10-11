@@ -51,7 +51,7 @@ def init_globals():
     tf_listener = tf2_ros.TransformListener(tf_buffer)
     
     current_destination = PoseStamped()
-    current_destination.header.frame_id = navigation_frame
+    current_destination.header.frame_id = navigatio_frame
 
 def callback_bci(data):
     global state

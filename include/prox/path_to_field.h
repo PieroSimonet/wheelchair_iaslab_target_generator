@@ -51,7 +51,7 @@ namespace prox
             double max_distance_, delta_distance_;
             int    rate_;
 
-            std::string frame_id_, odom_frame_;
+            std::string frame_id_, odom_frame_, base_frame;
 
             nav_msgs::Path path_;
             nav_msgs::Odometry current_odom_;
@@ -59,6 +59,7 @@ namespace prox
             proximity_grid::ProximityGridMsg attractor_;
 
             tf2_ros::Buffer tf_buffer_;
+            tf2_ros::TransformListener* tf_listener;
             
     };
 } // namespace prox
