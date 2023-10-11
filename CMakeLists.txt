@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   move_base_msgs
   proximity_grid
+  rosneuro_msgs
   std_srvs
   tf
   tf2_ros
@@ -131,6 +132,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/lib/confidence_control.cpp
   src/lib/path_to_field.cpp
+  src/lib/target_generator.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -143,7 +145,7 @@ add_library(${PROJECT_NAME}
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(confidence_control_node src/ConfidenceControl.cpp)
 add_executable(path_to_field_node src/PathToField.cpp)
-
+add_executable(target_generator_node src/TargetGenerator.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -162,6 +164,11 @@ target_link_libraries(confidence_control_node
 )
 
 target_link_libraries(path_to_field_node
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(target_generator_node
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
