@@ -19,6 +19,7 @@ void path_to_field::run() {
         this->segment_path();
         this->generate_attactor();
         this->attractor_pub_.publish(this->attractor_);
+        ros::spinOnce();
         rate.sleep();
     }
 }
@@ -75,10 +76,10 @@ void path_to_field::setup_grid() {
 
 void path_to_field::setup_listeners() {
     // TODO recheck these
-    ROS_WARN("A");
     this->odom_sub_ = this->nh_.subscribe(this->odom_topic_, 1, &path_to_field::odom_callback, this);
     this->path_sub_ = this->nh_.subscribe(this->path_topic_, 1, &path_to_field::path_callback, this);
     this->goal_sub_ = this->nh_.subscribe(this->goal_topic_, 1, &path_to_field::goal_callback, this);
+    ROS_WARN("pub");
 }
 
 void path_to_field::setup_services() {}
@@ -121,7 +122,7 @@ void path_to_field::generate_attactor() {
 
     try{
 
-        transform = this->tf_buffer_.lookupTransform(this->odom_frame_, this->base_frame, ros::Time(0), ros::Duration(1.0));
+        transform = this->tf_buffer_.lookupTransform(this->odom_frame_, this->base_frame, ros::Time(0), ros::Duration(1/this->rate_));
 
         geometry_msgs::Pose destination;
         tf2::doTransform(this->current_goal_.pose, destination, transform);
@@ -133,7 +134,7 @@ void path_to_field::generate_attactor() {
 
     }catch (tf2::TransformException &ex) {
 
-        ROS_WARN("Could NOT transform %s to %s: %s \n Set an attractor on itself", this->odom_frame_.c_str(), this->base_frame.c_str() ,ex.what());
+        // ROS_WARN("Could NOT transform %s to %s: %s \n Set an attractor on itself", this->odom_frame_.c_str(), this->base_frame.c_str() ,ex.what());
         // DO NOT SET NEW DISTANCE -> Attractor will be in (0,0)
     }
 
@@ -163,8 +164,6 @@ void path_to_field::generate_attactor() {
 }
 
 void path_to_field::odom_callback(const nav_msgs::Odometry msg) {
-    ROS_WARN("A");
-
     this->current_odom_ = msg;
 }
 

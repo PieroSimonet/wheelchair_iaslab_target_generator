@@ -22,7 +22,9 @@
         <param name="frame_id"   value="fused_scan"/>
   </node> -->
 
-  <node name='target_generator'            pkg='prox' type='target_generator.py'/>
+  <node name='target_generator'  pkg='prox' type='target_generator.py' output="screen">
+    <param name="odom_topic" value="/odometry/filtered"/>
+  </node>
  
   <node name='confidence_control'          pkg='prox' type='confidence_control_node' output="screen">
 		<param name="short_distance" value="0.1"/>
