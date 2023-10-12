@@ -92,7 +92,7 @@ void path_to_field::segment_path() {
 
     double current_distance = 0;
 
-    for (int i = 0; i < this->path_.poses.size(); i++){
+    for (int i = this->path_.poses.size()-1; i >= 0; i--){
         if (!found){
             current_distance = sqrt(
               pow(this->current_odom_.pose.pose.position.x - this->path_.poses[i].pose.position.x, 2) +
@@ -121,7 +121,7 @@ void path_to_field::generate_attactor() {
 
     try{
 
-        transform = this->tf_buffer_.lookupTransform(this->odom_frame_, this->base_frame, ros::Time(0), ros::Duration(1/this->rate_));
+        transform = this->tf_buffer_.lookupTransform(this->base_frame, this->odom_frame_, ros::Time(0), ros::Duration(1.0));
 
         geometry_msgs::Pose destination;
         tf2::doTransform(this->current_goal_.pose, destination, transform);

@@ -6,8 +6,8 @@
     <param name="frame_id"   value="fused_scan"/>
     <param name="base_frame" value="wcias_base_footprint"/>
     <param name="odom_topic" value="/odometry/filtered"/>
-    <param name="goal_topic" value="/move_base/goal"/>
-    <param name="path_topic" value="/move_base/local_plan"/>
+    <param name="goal_topic" value=""/>
+    <param name="path_topic" value="/move_base/NavfnROS/plan"/>
     <param name="odom_frame" value="wcias_odom"/>
     
     <param name="angle_min" value="-2.09"/>
