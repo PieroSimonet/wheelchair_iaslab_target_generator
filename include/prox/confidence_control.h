@@ -40,7 +40,7 @@ namespace prox {
       	
             ros::Subscriber	odometry_sub_;
             ros::Subscriber	goal_sub_;
-            ros::ServiceClient field_stard_srv, field_stop_srv;
+            ros::ServiceClient field_stard_srv, field_stop_srv, request_new_target_srv;
 
             nav_msgs::Odometry current_position;
             geometry_msgs::PoseStamped current_goal;

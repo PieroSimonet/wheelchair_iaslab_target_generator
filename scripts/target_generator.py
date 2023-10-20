@@ -65,6 +65,7 @@ def generate_new_target():
     pose = PoseStamped()
     pose.header.frame_id = navigation_frame
     pose.pose.position.x = 1
+    callback_bci(random.random())
     pose.pose.position.y = state
     return pose
 
@@ -105,11 +106,11 @@ def main():
     # TODO : update these as parameters
     rate = rospy.Rate(0.5)
 
-    while not rospy.is_shutdown():
-        global state
-        callback_bci(random.random())
-        request_new_target_callback()
-        rate.sleep()
+    #while not rospy.is_shutdown():
+    #    global state
+    #    callback_bci(random.random())
+    #    request_new_target_callback()
+    #    rate.sleep()
 
     rospy.spin()
     
