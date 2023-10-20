@@ -105,6 +105,12 @@ def main():
     # TODO : update these as parameters
     rate = rospy.Rate(0.5)
 
+    while not rospy.is_shutdown():
+        global state
+        callback_bci(random.random())
+        request_new_target_callback()
+        rate.sleep()
+
     rospy.spin()
     
 if __name__ == '__main__':
