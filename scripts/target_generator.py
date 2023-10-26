@@ -20,8 +20,10 @@ def setup_parameters():
 
     odom_topic = rospy.get_param('~odom_topic', '/odom')
     navigation_name = rospy.get_param('~navigation_name', "move_base")
-    goal_topic = rospy.get_param('~goal_topic', '/move_base/goal/')
+    goal_topic = rospy.get_param('~goal_topic', '/move_base/goal')
     navigation_frame = rospy.get_param('~navigation_frame', 'wcias_odom')
+    frame_base = rospy.get_param('~frame_base', 'wcias_base_link')
+
 
 def odom_callback(data: Odometry):
     global odom_position
@@ -64,19 +66,23 @@ def generate_new_target():
     global state, navigation_frame
     pose = PoseStamped()
     pose.header.frame_id = navigation_frame
-    pose.pose.position.x = 1
-    callback_bci(random.random())
-    pose.pose.position.y = state
+    pose.pose.position.x = 2
+    #callback_bci(random.random())
+    pose.pose.position.y = 0 # 
+    state
     return pose
 
-def request_new_target_callback():
+def request_new_target_callback(msg):
     global movebase_client, tf_buffer, state
     global odom_topic, frame_base, navigation_frame, goal_topic, navigation_name
 
+    #print("laaaa")
 
     pose = generate_new_target()
+    #print(pose)
     transform = tf_buffer.lookup_transform(navigation_frame, frame_base, rospy.Time(0), rospy.Duration(1))
     pose = tf2_geometry_msgs.do_transform_pose(pose, transform)
+    #print(pose)
 
     goal = MoveBaseGoal()
     goal.target_pose.pose = pose.pose
@@ -98,6 +104,7 @@ def main():
     setup_parameters()
     init_globals()
     setup_listeners()
+    setup_services()
 
     global movebase_client
     movebase_client = actionlib.SimpleActionClient(navigation_name, MoveBaseAction)
@@ -105,6 +112,9 @@ def main():
 
     # TODO : update these as parameters
     rate = rospy.Rate(0.5)
+
+        
+    rospy.Timer(rospy.Duration(3), request_new_target_callback)
 
     #while not rospy.is_shutdown():
     #    global state

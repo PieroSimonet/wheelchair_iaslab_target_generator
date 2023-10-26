@@ -32,6 +32,7 @@ bool confidence_control::setup_listeners() {
 bool confidence_control::setup_services() {
     this->field_stard_srv = this->nh_.serviceClient<std_srvs::Empty>("/navigation/navigation_start");
     this->field_stop_srv  = this->nh_.serviceClient<std_srvs::Empty>("/navigation/navigation_stop");
+    this->request_new_target_srv = this->nh_.serviceClient<std_srvs::Empty>("/navigation/request_new_target");
     return true;
 }
 
@@ -45,6 +46,7 @@ void confidence_control::run() {
             this->field_stard_srv.call(this->empty);
             this->running = true;
         }else if(this->goal_reached_ && this->running){
+            this->request_new_target_srv.call(this->empty);
             
             this->field_stop_srv.call(this->empty);
             this->running = false;
