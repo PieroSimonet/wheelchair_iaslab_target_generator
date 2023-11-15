@@ -24,6 +24,7 @@
 
   <node name='target_generator'  pkg='prox' type='target_generator.py' output="screen">
     <param name="odom_topic" value="/odometry/filtered"/>
+    <param name="trav_topic" value="/camera/camera/trav"/>
   </node>
  
   <node name='confidence_control'          pkg='prox' type='confidence_control_node' output="screen">
