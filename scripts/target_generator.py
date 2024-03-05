@@ -4,12 +4,14 @@ import rospy
 import math
 import random
 
-import numpy as np
 from std_msgs.msg import Header
 from nav_msgs.msg import Path, Odometry
 from geometry_msgs.msg import PoseStamped, Pose
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseActionGoal
-from proximity_grid.msg import ProximityGridMsg
+from proximity_grid.msg import ProximityGrid
+
+from rosneuro_msgs.msg import NeuroOutput
+
 import actionlib
 import tf2_ros
 import tf2_geometry_msgs
@@ -50,7 +52,8 @@ def setup_listeners():
 
     rospy.Subscriber(odom_topic, Odometry, odom_callback)
     rospy.Subscriber(goal_topic, MoveBaseActionGoal, goal_callback)
-    rospy.Subscriber(trav_topic, ProximityGridMsg, trav_callback)
+    rospy.Subscriber(trav_topic, ProximityGrid, trav_callback)
+    rospy.Subscriber('/neuroprediction', NeuroOutput, callback_bci)
 
 def init_globals():
     global tf_buffer, tf_listener, current_destination, path, odom_position, state
@@ -67,10 +70,11 @@ def init_globals():
     current_destination.header.frame_id = navigation_frame
 
 def callback_bci(data):
+    prob = data.softpredict.data[0]
     global state
-    if (data > 0.7):
+    if (prob > 0.7):
         state = 1
-    elif(data < 0.3):
+    elif(prob < 0.3):
         state = -1
     else:
         state = 0
