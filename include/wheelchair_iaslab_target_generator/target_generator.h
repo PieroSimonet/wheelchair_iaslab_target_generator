@@ -6,7 +6,7 @@
 #include <tf2_ros/transform_listener.h>
 //#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-namespace prox {
+namespace wheelchair_iaslab_target_generator {
     class target_generator {
         public:
             target_generator(void);
@@ -48,7 +48,7 @@ namespace prox {
             tf2_ros::TransformListener* tf_listener_;
 
     };
-} // namespace prox
+} // namespace wheelchair_iaslab_target_generator
 
 
 #endif

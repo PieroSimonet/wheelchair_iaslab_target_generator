@@ -10,7 +10,7 @@
 
 #include <cmath>
 
-namespace prox {
+namespace wheelchair_iaslab_target_generator {
     class confidence_control {
         public:
             confidence_control(void);
@@ -49,6 +49,6 @@ namespace prox {
             double long_distance;
 
     };
-} // namespace prox
+} // namespace wheelchair_iaslab_target_generator
 
 #endif

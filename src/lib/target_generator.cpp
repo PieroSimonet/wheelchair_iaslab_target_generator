@@ -1,6 +1,6 @@
-#include "prox/target_generator.h"
+#include "wheelchair_iaslab_target_generator/target_generator.h"
 
-namespace prox {
+namespace wheelchair_iaslab_target_generator {
 
 target_generator::target_generator() {
     this->initialize();

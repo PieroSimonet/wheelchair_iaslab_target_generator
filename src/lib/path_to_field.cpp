@@ -1,6 +1,6 @@
-#include "prox/path_to_field.h"
+#include "wheelchair_iaslab_target_generator/path_to_field.h"
 
-namespace prox {
+namespace wheelchair_iaslab_target_generator {
 
 path_to_field::path_to_field() {
     this->initialize();
