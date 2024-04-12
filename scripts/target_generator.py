@@ -16,6 +16,7 @@ import tf2_geometry_msgs
 
 from std_srvs.srv import Empty
 
+from sensor_msgs.msg import Joy
 
 def setup_parameters():
     global odom_topic, frame_base, navigation_frame, goal_topic, navigation_name, trav_topic 
@@ -45,12 +46,22 @@ def trav_callback(data):
     state = np.argmin(x) - 1
     pass
 
+def joy_callback(data):
+    global state, straigth, power
+    power = power + data.buttons[0]
+    power = power - data.buttons[1]
+    state = data.axes[4]
+    straigth = data.axes[5] * power
+    #print("state: ", state, " straigth: ", straigth)
+
 def setup_listeners():
     global odom_topic, frame_base, navigation_frame, goal_topic, navigation_name, trav_topic
 
     rospy.Subscriber(odom_topic, Odometry, odom_callback)
     rospy.Subscriber(goal_topic, MoveBaseActionGoal, goal_callback)
     rospy.Subscriber(trav_topic, ProximityGridMsg, trav_callback)
+
+    rospy.Subscriber("/joy", Joy, joy_callback)
 
 def init_globals():
     global tf_buffer, tf_listener, current_destination, path, odom_position, state
@@ -76,11 +87,11 @@ def callback_bci(data):
         state = 0
 
 def generate_new_target():
-    global state, navigation_frame
+    global state, navigation_frame, straigth, power
     pose = PoseStamped()
     pose.header.frame_id = navigation_frame
-    pose.pose.position.x = 2
-    #callback_bci(random.random())
+    pose.pose.position.x = power 
+    #callback_bci(random.random()) // For now use only the info from the joystick
     pose.pose.position.y = state 
     return pose
 
@@ -110,8 +121,10 @@ def setup_services():
 def main():
     rospy.init_node('bci_sender')
 
-    global odom_topic, frame_base, navigation_frame, goal_topic, navigation_name
+    global odom_topic, frame_base, navigation_frame, goal_topic, navigation_name, straigth, power
 
+    straigth = 0
+    power = 1
 
     setup_parameters()
     init_globals()
@@ -126,7 +139,7 @@ def main():
     # rate = rospy.Rate(0.5)
 
         
-    rospy.Timer(rospy.Duration(3), request_new_target_callback)
+    rospy.Timer(rospy.Duration(1), request_new_target_callback)
 
     #while not rospy.is_shutdown():
     #    global state
