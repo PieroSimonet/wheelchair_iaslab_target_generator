@@ -30,7 +30,7 @@
     <param name="trav_topic" value="/camera/camera/trav"/>
   </node>
  
-  <node name='confidence_control'          pkg='wheelchair_iaslab_target_generator' type='confidence_control_node' output="screen">
+  <node name='confidence_control'  pkg='wheelchair_iaslab_target_generator' type='confidence_control_node' output="screen">
 		<param name="short_distance" value="0.1"/>
 		<param name="long_distance"  value="0.4"/>
 

@@ -13,8 +13,7 @@
 
 #include <cmath>
 
-namespace prox
-{
+namespace wheelchair_iaslab_target_generator {
     class path_to_field {
         public:
             path_to_field();
@@ -62,7 +61,7 @@ namespace prox
             tf2_ros::TransformListener* tf_listener;
             
     };
-} // namespace prox
+} // namespace wheelchair_iaslab_target_generator
 
 
 #endif

@@ -1,6 +1,6 @@
-#include "prox/confidence_control.h"
+#include "wheelchair_iaslab_target_generator/confidence_control.h"
 
-namespace prox { 
+namespace wheelchair_iaslab_target_generator { 
 
 confidence_control::confidence_control(void) {
     this->nh_ = ros::NodeHandle("~");
