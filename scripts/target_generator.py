@@ -81,6 +81,7 @@ def init_globals():
     current_destination.header.frame_id = navigation_frame
 
 def callback_bci(data):
+    # This function is called when the BCI sends an output
     prob = data.softpredict.data[0]
     global state
     if (prob > 0.7):
