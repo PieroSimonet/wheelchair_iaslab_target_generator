@@ -30,7 +30,6 @@ def setup_parameters():
     frame_base = rospy.get_param('~frame_base', 'wcias_base_link')
     trav_topic = rospy.get_param('~trav_topic', '/trav')
 
-
 def odom_callback(data: Odometry):
     global odom_position
     odom_position = data
