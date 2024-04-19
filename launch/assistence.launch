@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <node name='path_to_attractor_converter' pkg='wheelchair_iaslab_target_generator' type='path_to_field_node'>
+  <node name='path_to_attractor_converter' pkg='wheelchair_iaslab_target_generator' type='path_to_field_node' output="screen">
     <param name="attractor_topic" value="/proximity_grid/attractors" /> 
     <param name="frame_id"   value="wcias_base_link"/>
     <param name="base_frame" value="wcias_base_footprint"/>

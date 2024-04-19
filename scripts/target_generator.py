@@ -4,11 +4,13 @@ import rospy
 import math
 import random
 
+from numpy import sign
+
 from std_msgs.msg import Header
 from nav_msgs.msg import Path, Odometry
 from geometry_msgs.msg import PoseStamped, Pose
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseActionGoal
-from proximity_grid.msg import ProximityGrid
+from proximity_grid.msg import ProximityGridMsg
 
 from rosneuro_msgs.msg import NeuroOutput
 
@@ -49,19 +51,26 @@ def trav_callback(data):
     pass
 
 def joy_callback(data):
-    global state, straigth, power
+    global state, straigth, power, new_data
+    # TODO: find a day better way to update the path requested
     power = power + data.buttons[0]
     power = power - data.buttons[1]
-    state = data.axes[4]
-    straigth = data.axes[5] * power
-    #print("state: ", state, " straigth: ", straigth)
+    if (abs(data.axes[4]) == 1):
+        state = data.axes[4] * power 
+        new_data = True
+    if (abs(data.axes[5]) == 1):
+        #straigth = data.axes[5] * power
+        straigth = power * data.axes[5]
+        state = 0
+        new_data = True
+    print("state: ", state, " straigth: ", straigth)
 
 def setup_listeners():
     global odom_topic, frame_base, navigation_frame, goal_topic, navigation_name, trav_topic
 
     rospy.Subscriber(odom_topic, Odometry, odom_callback)
     rospy.Subscriber(goal_topic, MoveBaseActionGoal, goal_callback)
-    rospy.Subscriber(trav_topic, ProximityGrid, trav_callback)
+    rospy.Subscriber(trav_topic, ProximityGridMsg, trav_callback)
     rospy.Subscriber('/neuroprediction', NeuroOutput, callback_bci)
 
     rospy.Subscriber("/joy", Joy, joy_callback)
@@ -83,24 +92,25 @@ def init_globals():
 def callback_bci(data):
     # This function is called when the BCI sends an output
     prob = data.softpredict.data[0]
-    global state
+    global state, new_data
     if (prob > 0.7):
         state = 1
     elif(prob < 0.3):
         state = -1
     else:
         state = 0
+    new_data = False
 
 def generate_new_target():
     global state, navigation_frame, straigth, power
     pose = PoseStamped()
     pose.header.frame_id = navigation_frame
-    pose.pose.position.x = power 
+    pose.pose.position.x = straigth 
     #callback_bci(random.random()) // For now use only the info from the joystick
     pose.pose.position.y = state 
     return pose
 
-def request_new_target_callback(msg):
+def request_new_target_callback():
     global movebase_client, tf_buffer, state
     global odom_topic, frame_base, navigation_frame, goal_topic, navigation_name
 
@@ -124,9 +134,11 @@ def setup_services():
     rospy.Service('/navigation/request_new_target', Empty, request_new_target_callback)
 
 def main():
-    rospy.init_node('bci_sender')
+    rospy.init_node('target_generator')
 
-    global odom_topic, frame_base, navigation_frame, goal_topic, navigation_name, straigth, power
+    global odom_topic, frame_base, navigation_frame, goal_topic, navigation_name, straigth, power, new_data
+
+    new_data = False
 
     straigth = 0
     power = 1
@@ -140,19 +152,18 @@ def main():
     movebase_client = actionlib.SimpleActionClient(navigation_name, MoveBaseAction)
     movebase_client.wait_for_server()
 
-    # TODO : update these as parameters
-    # rate = rospy.Rate(0.5)
+    rate = rospy.Rate(0.5)
 
-        
-    rospy.Timer(rospy.Duration(1), request_new_target_callback)
+    # for now set the requet when the person
+    # rospy.Timer(rospy.Duration(1.5), request_new_target_callback)
 
-    #while not rospy.is_shutdown():
-    #    global state
-    #    callback_bci(random.random())
-    #    request_new_target_callback()
-    #    rate.sleep()
+    while not rospy.is_shutdown():
+        if new_data:
+            request_new_target_callback()
+            new_data = False
+        rate.sleep()
 
-    rospy.spin()
+    #rospy.spin()
     
 if __name__ == '__main__':
     main()

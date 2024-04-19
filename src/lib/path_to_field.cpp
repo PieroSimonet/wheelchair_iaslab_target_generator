@@ -170,6 +170,11 @@ void path_to_field::odom_callback(const nav_msgs::Odometry msg) {
 }
 
 void path_to_field::path_callback(const nav_msgs::Path msg) {
+
+    if (msg.poses.size() == 0){
+        ROS_WARN("Empty path received");
+        return; 
+    }
     this->path_ = msg;
     this->current_goal_ = msg.poses.back();
 }
