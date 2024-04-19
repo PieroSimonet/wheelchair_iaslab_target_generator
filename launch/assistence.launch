@@ -24,6 +24,7 @@
 
   <?ignore For now the target_generator is using the joystick ?>
   <node name="joyconnetion" pkg="joy" type="joy_node" />
+  <?ingore TODO: add a second joystic that is the 'main' one ?>
 
   <node name='target_generator'  pkg='wheelchair_iaslab_target_generator' type='target_generator.py' output="screen">
     <param name="odom_topic" value="/odometry/filtered"/>
