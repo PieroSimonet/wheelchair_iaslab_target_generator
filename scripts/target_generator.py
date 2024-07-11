@@ -8,7 +8,7 @@ from numpy import sign
 
 from std_msgs.msg import Header
 from nav_msgs.msg import Path, Odometry
-from geometry_msgs.msg import PoseStamped, Pose
+from geometry_msgs.msg import PoseStamped, Pose, PoseArray
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal, MoveBaseActionGoal
 from proximity_grid.msg import ProximityGridMsg
 
@@ -71,6 +71,7 @@ def setup_listeners():
     rospy.Subscriber(goal_topic, MoveBaseActionGoal, goal_callback)
     rospy.Subscriber(trav_topic, ProximityGridMsg, trav_callback)
     rospy.Subscriber('/neuroprediction', NeuroOutput, callback_bci)
+    rospy.Subscriber('/yolo_detected_objects_destination', PoseArray, callback_yolo)
 
     rospy.Subscriber("/joy", Joy, joy_callback)
 
@@ -99,6 +100,15 @@ def callback_bci(data):
     else:
         state = 0
     new_data = False
+
+def callback_yolo(msg):
+    global navigation_frame , new_data, frame_base
+    frame_base = msg.header.frame_id
+    global straigth, state
+    straigth = msg.poses[0].position.x
+    state = msg.poses[0].position.y
+    new_data = True
+
 
 def generate_new_target():
     global state, navigation_frame, straigth, power

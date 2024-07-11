@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <node name='path_to_attractor_converter' pkg='wheelchair_iaslab_target_generator' type='path_to_field_node' output="screen">
+  <!-- <node name='path_to_attractor_converter' pkg='wheelchair_iaslab_target_generator' type='path_to_field_node' output="screen">
     <param name="attractor_topic" value="/proximity_grid/attractors" /> 
     <param name="frame_id"   value="wcias_base_link"/>
     <param name="base_frame" value="wcias_base_footprint"/>
@@ -17,7 +17,7 @@
     <param name="range_max" value="6.0"/>
 
     <param name="rate" value='50' />
-  </node> 
+  </node> -->
 
   <!--<node pkg="prox" type="converter.py" name="willy" output="screen">
         <remap from="/attractors" to="proximity_grid/attractors" /> 
@@ -28,17 +28,23 @@
   <node name="joyconnetion" pkg="joy" type="joy_node" />
   <?ingore TODO: add a second joystic that is the 'main' one ?>
 
-  <node name='target_generator'  pkg='wheelchair_iaslab_target_generator' type='target_generator.py' output="screen">
-    <param name="odom_topic" value="/odometry/filtered"/>
-    <param name="trav_topic" value="/camera/camera/trav"/>
+  <node name='target_generator'  pkg='wheelchair_iaslab_target_generator' type='target_generator2.py' output="screen" respawn="true"> 
+    <!-- <param name="odom_topic" value="/odometry/filtered"/>
+    <param name="trav_topic" value="/camera/camera/trav"/> -->
   </node>
+
+  <node name='target_generator_yolo'  pkg='wheelchair_iaslab_target' type='convert_box.py' output="screen" respawn="true">
+    <param name="object" value="desk" /> <!-- the default is person -->
+  </node>
+
+
  
-  <node name='confidence_control'  pkg='wheelchair_iaslab_target_generator' type='confidence_control_node' output="screen">
+  <!-- <node name='confidence_control'  pkg='wheelchair_iaslab_target_generator' type='confidence_control_node' output="screen">
 		<param name="short_distance" value="0.1"/>
 		<param name="long_distance"  value="0.4"/>
 
 		<param name="odom" value="/odometry/filtered"/>
 		<param name="goal" value="/move_base/goal"/>
-	</node>
+	</node> -->
 
 </launch>
