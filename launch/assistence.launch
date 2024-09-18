@@ -31,6 +31,7 @@
   <node name='target_generator'  pkg='wheelchair_iaslab_target_generator' type='target_generator2.py' output="screen" respawn="true"> 
     <!-- <param name="odom_topic" value="/odometry/filtered"/>
     <param name="trav_topic" value="/camera/camera/trav"/> -->
+      
   </node>
 
   <node name='target_generator_yolo'  pkg='wheelchair_iaslab_target' type='convert_box.py' output="screen" respawn="true">

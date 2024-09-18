@@ -17,6 +17,12 @@ import tf2_geometry_msgs
 class TargetGenerator:
     def __init__(self):
         rospy.init_node('targetgen2')
+
+        self.with_yolo   = True 
+        self.with_errors = False #true con yolo e no-yolo
+
+        self.prob = 0.2
+
         self.setup_listeners()
 
         self.tf_buffer = tf2_ros.Buffer()
@@ -33,22 +39,26 @@ class TargetGenerator:
         self.navigation_frame = 'wcias_odom'
 
         self.joy_y = 0
-        self.joy_x = 0
+        self.joy_x = 3
 
         self.yolo_y = 0
         self.yolo_x = 3.0
 
         navigation_name = rospy.get_param('~navigation_name', "move_base")
-        self.with_errors =  rospy.get_param('~with_errors', "False")
+
+        # rospy.get_param('~with_errors', True)
 
         self.movebase_client = actionlib.SimpleActionClient(navigation_name, MoveBaseAction)
         self.movebase_client.wait_for_server()
 
         self.is_active = False
 
+        self.last_cmd_joy = rospy.get_time()
+
 
     def setup_listeners(self):
-        rospy.Subscriber("/yolo_detected_objects_destination", PoseArray, self.callback_yolo)
+        if self.with_yolo == True:
+            rospy.Subscriber("/yolo_detected_objects_destination", PoseArray, self.callback_yolo)
         rospy.Subscriber("/joy", Joy, self.callback_joy)
 
     def callback_yolo(self, msg):
@@ -70,7 +80,7 @@ class TargetGenerator:
 
         if (abs(msg.axes[4]) == 1):
             self.joy_y = msg.axes[4] * power
-            if random.random() < 0.2 and self.with_errors:
+            if random.random() < self.prob and self.with_errors:
                 self.joy_y = - self.joy_y
             self.joy_x = 0
             self.new_data = True
@@ -85,12 +95,13 @@ class TargetGenerator:
         navigation_frame = 'wcias_base_link'
 
         if current_time - self.last_time_joy > 2.5 and current_time - self.last_time_yolo > 2.5:
-            self.pos_x = self.yolo_x
-            self.pos_y = self.yolo_y
+            self.pos_x = 3.0
+            self.pos_y = 0.0
 
-        if current_time - self.last_time_joy < 4.0:
+        if current_time - self.last_time_joy < 4.0:# and current_time - self.last_cmd_joy < 2.5:
             self.pos_x = self.joy_x
             self.pos_y = self.joy_y
+            self.last_cmd_joy = rospy.get_time()
 
         elif current_time - self.last_time_yolo < 4.0:
             self.pos_x = self.yolo_x
