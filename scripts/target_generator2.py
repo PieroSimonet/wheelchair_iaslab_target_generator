@@ -18,7 +18,7 @@ class TargetGenerator:
     def __init__(self):
         rospy.init_node('targetgen2')
 
-        self.with_yolo   = True 
+        self.with_yolo   = False 
         self.with_errors = False #true con yolo e no-yolo
 
         self.prob = 0.2
@@ -51,7 +51,7 @@ class TargetGenerator:
         self.movebase_client = actionlib.SimpleActionClient(navigation_name, MoveBaseAction)
         self.movebase_client.wait_for_server()
 
-        self.is_active = False
+        self.is_active = True
 
         self.last_cmd_joy = rospy.get_time()
 
@@ -59,7 +59,7 @@ class TargetGenerator:
     def setup_listeners(self):
         if self.with_yolo == True:
             rospy.Subscriber("/yolo_detected_objects_destination", PoseArray, self.callback_yolo)
-        rospy.Subscriber("/joy", Joy, self.callback_joy)
+        rospy.Subscriber("/fake_joy", Joy, self.callback_joy)
 
     def callback_yolo(self, msg):
         for obj in msg.poses:
@@ -78,14 +78,14 @@ class TargetGenerator:
             # Reverse the activation if the y is pressed
             self.is_active = not self.is_active
 
-        if (abs(msg.axes[4]) == 1):
-            self.joy_y = msg.axes[4] * power
+        if (abs(msg.axes[6]) == 1):
+            self.joy_y = msg.axes[6] * power
             if random.random() < self.prob and self.with_errors:
                 self.joy_y = - self.joy_y
             self.joy_x = 0
             self.new_data = True
-        if (abs(msg.axes[5]) == 1):
-            self.joy_x = msg.axes[5] * power
+        if (abs(msg.axes[7]) == 1):
+            self.joy_x = msg.axes[7] * power
             self.joy_y = 0
             self.new_data = True
 
@@ -139,8 +139,8 @@ class TargetGenerator:
         while not rospy.is_shutdown():
             if self.is_active:
                 current_time = rospy.get_time() 
-                if current_time - self.last_time > 4.0:
-                    self.new_data = True
+                # if current_time - self.last_time > 4.0:
+                #     self.new_data = True
 
                 if self.new_data:
                     self.request_move_base()

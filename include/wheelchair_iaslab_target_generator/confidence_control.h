@@ -7,10 +7,14 @@
 #include <nav_msgs/Odometry.h>
 #include <move_base_msgs/MoveBaseActionGoal.h>
 #include <std_srvs/Empty.h>
+#include <actionlib/client/simple_action_client.h>
+#include <move_base_msgs/MoveBaseAction.h>
+#include <std_msgs/Bool.h>
 
 #include <cmath>
 
 namespace wheelchair_iaslab_target_generator {
+
     class confidence_control {
         public:
             confidence_control(void);
@@ -42,11 +46,17 @@ namespace wheelchair_iaslab_target_generator {
             ros::Subscriber	goal_sub_;
             ros::ServiceClient field_stard_srv, field_stop_srv, request_new_target_srv;
 
+            std_msgs::Bool goalreached_msg_;
+            ros::Publisher goalreached_pub_;
+
             nav_msgs::Odometry current_position;
             geometry_msgs::PoseStamped current_goal;
 
             double short_distance;
             double long_distance;
+
+            actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_;
+
 
     };
 } // namespace wheelchair_iaslab_target_generator

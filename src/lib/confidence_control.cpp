@@ -2,7 +2,7 @@
 
 namespace wheelchair_iaslab_target_generator { 
 
-confidence_control::confidence_control(void) {
+confidence_control::confidence_control(void) : ac_("move_base", true) {
     this->nh_ = ros::NodeHandle("~");
 
     this->current_position = nav_msgs::Odometry();
@@ -17,6 +17,10 @@ confidence_control::confidence_control(void) {
     ros::param::param("~odom",  this->odom_topic_, odom);
     ros::param::param("~goal",  this->goal_topic_, goal);
 
+    ac_.waitForServer();
+
+    this->goalreached_pub_ = ros::Publisher(this->nh_.advertise<std_msgs::Bool>("goalreached", 1));
+
     this->setup_listeners();
     this->setup_services();
 }
@@ -30,9 +34,9 @@ bool confidence_control::setup_listeners() {
 }
 
 bool confidence_control::setup_services() {
-    this->field_stard_srv = this->nh_.serviceClient<std_srvs::Empty>("/navigation/navigation_start");
-    this->field_stop_srv  = this->nh_.serviceClient<std_srvs::Empty>("/navigation/navigation_stop");
-    this->request_new_target_srv = this->nh_.serviceClient<std_srvs::Empty>("/navigation/request_new_target");
+    //this->field_stard_srv = this->nh_.serviceClient<std_srvs::Empty>("/navigation/navigation_start");
+    //this->field_stop_srv  = this->nh_.serviceClient<std_srvs::Empty>("/navigation/navigation_stop");
+    //this->request_new_target_srv = this->nh_.serviceClient<std_srvs::Empty>("/navigation/request_new_target");
     return true;
 }
 
@@ -51,8 +55,11 @@ void confidence_control::run() {
             this->field_stop_srv.call(this->empty);
             this->running = false;
 
-            //TODO: send the message to the planner that the goal is reached
+            ac_.cancelAllGoals();
         }
+
+        this->goalreached_msg_.data = this->goal_reached_;
+        this->goalreached_pub_.publish(this->goalreached_msg_);
 
         ros::spinOnce();
         r.sleep();
@@ -69,6 +76,7 @@ void confidence_control::check_control_state() {
     if (d < this->long_distance)
         this->goal_reached_ = true;
     // TODO: When the goal is reaced require a new target
+    // For the Hmm I do not need this becouse is managed by the gui
 }
 
 void confidence_control::odom_callback(const nav_msgs::Odometry msg) {
